@@ -1,0 +1,147 @@
+﻿//求最大和子数组算法实验：蛮力搜索、分治法、动态规划
+//
+#include<stdafx.h>
+#include <stdlib.h> 
+#include <time.h>
+#include <limits.h>
+#include <stdio.h>
+
+#define N 100000
+
+struct MAXSUB
+{
+	int    low;
+	int    high;
+	long  sum;
+};
+
+struct MAXSUB EXHAUSTIONMAXSUBArray(int R[],int n)  //最大和子数组蛮力搜索算法  
+{
+	int i, j;
+	struct MAXSUB m;
+	long tempsum;
+	m.low =m.high = 0;
+	m.sum = R[0];
+	for (i = 0; i < n; i++){
+		tempsum = 0;
+		for (j = i; j<n; j++){
+			tempsum = tempsum + R[j];			
+			if (tempsum>m.sum)
+			{
+				m.sum = tempsum;
+				m.low = i;
+				m.high = j;
+			}
+		}
+	}	
+	return m;
+}
+
+struct MAXSUB FINDMAXCROSSINGSUBARRAY(int R[], int low, int mid, int high){    //计算包含中点元素的最大和子数组算法
+	long leftsum = R[mid];
+	long sum = 0;
+	struct MAXSUB m;
+	int i, maxleft, maxright;
+	maxleft = maxright = mid;
+	for (i = mid; i >= low; i--)
+	{
+		sum = sum + R[i];
+		if (sum > leftsum){
+			leftsum = sum;
+			maxleft = i;
+		}
+	}
+	long rightsum=leftsum;
+	sum= leftsum;
+	for (i = mid+1; i <= high; i++)
+	{
+		sum = sum + R[i];
+		if (sum > rightsum){
+			rightsum = sum;
+			maxright = i;
+		}
+	}
+	m.low = maxleft;
+	m.high = maxright;
+	m.sum = rightsum;
+	return m;
+}
+
+struct MAXSUB FINDMAXIMUMSUBARRAY(int R[], int low, int high){  //类似归并排序计算最大和子数组算法
+	struct MAXSUB m,mleft,mright,mcross;
+	if (high == low){
+		m.low = low; m.high = high; m.sum = R[low];
+		return m;
+	} 
+	int mid = (low + high) / 2;
+	mleft = FINDMAXIMUMSUBARRAY( R, low, mid);
+	mright = FINDMAXIMUMSUBARRAY(R, mid + 1, high);
+	mcross = FINDMAXCROSSINGSUBARRAY(R, low, mid, high);
+	if (mleft.sum >= mright.sum && mleft.sum >= mcross.sum)
+		return mleft;
+	else if (mright.sum >= mleft.sum && mright.sum >= mcross.sum)
+		return mright;
+	else return mcross;
+}
+
+struct MAXSUB DYNAMICMAXIMUMSUBARRAY(int R[],int n){  //动态规划方法求最大和子数组算法
+	struct MAXSUB m;
+	int i;
+	long currentsum;//currentsum为包含R[i]的最大子数组元素之和
+	int currentlow;//currentlow为包含R[i]的最大子数组首元素下标
+	int currenthigh; //currenthigh为包含R[i]的最大子数组末元素下标
+	currentlow= currenthigh= 0;
+	currentsum = R[0];
+	m.low = m.high = 0;
+	m.sum = R[0];
+	for (i = 1; i < n; i++){
+		if (R[i]>=currentsum + R[i]){  //求包含R[i]的最大子数组
+			currentlow= currenthigh = i;
+			currentsum = R[i];
+		}
+		else {
+			currenthigh = i;
+			currentsum = currentsum + R[i];
+		}
+		if (currentsum>m.sum){       //包含R[i]的最大子数组与之当前的最大子数组比较
+			m.sum = currentsum;
+			m.low = currentlow;
+			m.high = currenthigh;
+		}
+	}
+	return m;
+}
+
+		int  main()
+		{
+			//int R[16] = { -13, -30, 25, 20, -3, -16, -23, 18, 20, -7, 12, -5, 22, 15, -49, 7 };
+			int *R = (int*)malloc(N*sizeof(int));
+			int time_start, time_end;          //分别记录排序开始前的时间和排序后的时间 
+			struct MAXSUB m;
+			srand(time(0));
+			for (int i = 0; i < N; i++)        //生成随机数并将这些随机数存在数组中 
+				R[i] = rand()%2000-1000;
+			time_start = clock();
+			
+			m=EXHAUSTIONMAXSUBArray(R, N);
+			time_end = clock();
+			printf("蛮力搜索最大子数组用时：%d 毫秒\n", time_end - time_start);
+			printf("最大子数组左下标：%d,右下标：%d\n", m.low, m.high);
+			printf("最大子数组元素之和：%d\n", m.sum);
+			printf("====================================================================================\n");
+			time_start = clock();
+			m= FINDMAXIMUMSUBARRAY(R, 0, N-1);
+			time_end = clock();
+			printf("分治最大子数组用时：%d 毫秒\n", time_end - time_start);
+			printf("最大子数组左下标：%d,右下标：%d\n", m.low, m.high);
+			printf("最大子数组元素之和：%d\n", m.sum);
+
+			printf("====================================================================================\n");
+			time_start = clock();
+			m = DYNAMICMAXIMUMSUBARRAY(R,N);
+			time_end = clock();
+			printf("动态规划最大子数组用时：%d 毫秒\n", time_end - time_start);
+			printf("动态规划最大子数组左下标：%d,右下标：%d\n", m.low, m.high);
+			printf("动态规划最大子数组元素之和：%d\n", m.sum);
+                                                     free(R); // 释放内存
+		}
