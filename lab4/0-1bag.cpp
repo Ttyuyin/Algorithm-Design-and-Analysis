@@ -3,6 +3,7 @@
 using namespace std;
 
 int main() {
+    //
     // 输入物品数量和背包容量
     int n, W;
     cout << "请输入物品数量: ";
