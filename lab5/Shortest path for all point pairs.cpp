@@ -3,6 +3,7 @@
 using namespace std;
 #define N 5
 
+//打印矩阵
 void printMatrix(int matrix[N][N], int n) {
     cout << "D^(" << n << ")=" << endl;
     for (int i = 0; i < N; ++i) {
@@ -18,6 +19,7 @@ void printMatrix(int matrix[N][N], int n) {
     }
     cout << endl;
 }
+//打印Pi矩阵
 void printPiMatrix(int piMatrix[N][N], int n) {
     cout << "Pi^(" << n << ")=" << endl;
     for (int i = 0; i < N; ++i) {
@@ -38,11 +40,13 @@ void floydWarshall(int W[N][N]) {
     int D[N][N];
     int Pi[N][N];
 
+    //第一个D[0][0]和原矩阵W[N][N]是相等的
     for (int i = 0; i < N; ++i) {
         for (int j = 0; j < N; ++j) {
             D[i][j] = W[i][j];
         }
     }
+    //求Pi矩阵。if条件里面是，自己不能是自己的前驱节点。同时不能无法到达
     for (int i = 0; i < N; ++i) {
         for (int j = 0; j < N; ++j) {
             if (i != j && D[i][j] != INT_MAX) {
@@ -54,10 +58,12 @@ void floydWarshall(int W[N][N]) {
         }
     }
 
+    //把第0矩阵打印出来
     printMatrix(D, 0);
     printPiMatrix(Pi, 0);
 
     for (int k = 0; k < N; ++k) {
+        //生成一个新的操作矩阵
         int D_new[N][N];
         int Pi_new[N][N];
         for (int i = 0; i < N; ++i) {
@@ -66,6 +72,7 @@ void floydWarshall(int W[N][N]) {
                 Pi_new[i][j] = Pi[i][j];
             }
         }
+        //循环赋值与更新
         for (int i = 0; i < N; ++i) {
             for (int j = 0; j < N; ++j) {
                 if (D[i][k] != INT_MAX && D[k][j] != INT_MAX) {
@@ -76,13 +83,14 @@ void floydWarshall(int W[N][N]) {
                 }
             }
         }
+        //赋值回去
         for (int i = 0; i < N; ++i) {
             for (int j = 0; j < N; ++j) {
                 D[i][j] = D_new[i][j];
                 Pi[i][j] = Pi_new[i][j];
             }
         }
-
+        //打印k的取值是0到N-1，第0个已经打印，所以现在要打印1到N的
         printMatrix(D, k + 1);
         printPiMatrix(Pi, k + 1);
     }
